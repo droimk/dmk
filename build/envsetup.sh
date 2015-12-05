@@ -1027,13 +1027,14 @@ function p2m()
 {
 	local _top=$(gettop)
 	local old_path=`pwd`
+	local KERNEL=`find kernel*/ -maxdepth 1 -name Makefile | awk -F"/" '{print $1}'`
 	if [ -z "$1" ] || [ "$1" = "-h" ];then
 		echo "p2m convert PCBA project to droimk"
 		echo "p2m [[pcba-prj],mtkbase-prj]"
 		return 0
 	fi
 	cd $_top > /dev/null
-	droi_src/build/a2m.sh $@
+	droi_src/build/a2m.sh 'mt6735' $KERNEL $@
 	cd $old_path > /dev/null
 }
 

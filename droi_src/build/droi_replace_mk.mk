@@ -21,6 +21,7 @@ ifneq ($(DROI_TEST_OUT_DIR),)
 $(error DROI_MODULE_PRECOPY Forbiding add out dir!!!!at [$(DROI_TEST_OUT_DIR)])
 endif
 
+KDEFINE=$(shell droi_src/build/exp_pcba_macro.sh $(DROI_PCBA_PRODUCT))
 ifeq ($(DROI_FC),)
 DROI_FC:=$(shell cat $(DROI_ACTION_CFG) 2>&1)
 DROI_FC:=$(findstring BUILD_DONE=y,$(DROI_FC))
