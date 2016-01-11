@@ -19,15 +19,38 @@ rm_flg=${args[5]}
 #mtk platform
 platform=mt6735
 
-preloader_custom_path=bootable/bootloader/preloader/custom
-lk_root_path=bootable/bootloader/lk
-kernel_arch_path=kernel-3.10/arch/$arch
-kernel_mach_path=kernel-3.10/drivers/misc/mediatek/mach/$platform
+KERNEL_V=`find kernel*/ -maxdepth 1 -name Makefile | awk -F"/" '{print $1}'`
+bsp_path_default=bootable/bootloader
+preloader_custom_path=$bsp_path_default/preloader/custom
+lk_root_path=$bsp_path_default/lk
+kernel_arch_path=$KERNEL_V/arch/$arch
+kernel_mach_path=$KERNEL_V/drivers/misc/mediatek/mach/$platform
 vendor_custom_path=vendor/mediatek/proprietary/custom
 company_path=device/$com_name
 trustzone_path=vendor/mediatek/proprietary/trustzone/project
 
-function process
+
+function itor()
+{
+	local path_arr=($bsp_path_default vendor/mediatek/proprietary/bootable/bootloader)
+	for p in ${path_arr[@]};do
+		preloader_custom_path=$p/preloader/custom
+		lk_root_path=$p/lk
+		`eval $1` && return
+	done
+	echo "can't find any path of bootable"
+}
+function zone_itor()
+{
+	local path_zone=($trustzone_path vendor/mediatek/proprietary/trustzone/custom/build/project)
+	for p in ${path_zone[@]};do
+		trustzone_path=$p
+		`eval $1` && return
+	done
+	echo "can't find any path of trustzone"
+}
+
+function process()
 {
 	local j=
 	trap 'exit' 1 2 3 15
@@ -48,7 +71,8 @@ function process
 function do_clone_action()
 {
 	#clone preloader
-
+	itor '[ -d $preloader_custom_path/$bproject ]'
+	zone_itor '[ -f $trustzone_path/$bproject.mk ]'
 	cp -r $preloader_custom_path/$bproject $preloader_custom_path/$nproject && \
 	mv $preloader_custom_path/$nproject/$bproject.mk $preloader_custom_path/$nproject/$nproject.mk  &&\
 	sed -i s/$bproject/$nproject/g $preloader_custom_path/$nproject/$nproject.mk
